@@ -257,13 +257,14 @@ def main(cfg: DictConfig):
         param_sq, grad_sq, num_params = 0, 0, 0
         for name, param in student.model.named_parameters():
             module_name = 'module.' + name
-            if module_name in grads:
-                grad = grads[module_name].to(param.device, dtype=torch.float32)
+            grad_name = module_name if module_name in grads else name
+            if grad_name in grads:
+                grad = grads[grad_name].to(param.device, dtype=torch.float32)
                 param.data = (param.data.to(torch.float32) + cfg.eps * grad).to(param.data.dtype)
                 param_sq += torch.sum(param.data.to(torch.float32) ** 2).item()
                 grad_sq += torch.sum(grad ** 2).item()
                 num_params += torch.numel(param.data)
-                used_grads.add(module_name)
+                used_grads.add(grad_name)
         
         assert used_grads == set(grads.keys()), f"Some gradients were not used or set: {set(grads.keys()) ^ used_grads}"
         if accelerator.is_main_process:
@@ -274,10 +275,11 @@ def main(cfg: DictConfig):
         used_grads = set()
         for name, param in dstudent.model.named_parameters():
             module_name = 'module.' + name
-            if module_name in grads:
-                grad = grads[module_name].to(param.device, dtype=torch.float32)
+            grad_name = module_name if module_name in grads else name
+            if grad_name in grads:
+                grad = grads[grad_name].to(param.device, dtype=torch.float32)
                 param.data = (param.data.to(torch.float32) - cfg.eps * grad).to(param.data.dtype)
-                used_grads.add(module_name)
+                used_grads.add(grad_name)
         
         assert used_grads == set(grads.keys()), f"Some gradients were not used or set: {set(grads.keys()) ^ used_grads}"
         del grads
