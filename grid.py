@@ -22,4 +22,4 @@ for tau in [0.9] + list(np.linspace(1.0, 2.0, 20)):
 random.seed(42)
 random.shuffle(lines)
 
-print(''.join(lines[offset::len(hashmap)]))
+print(''.join(lines[offset::len(hashmap)]), end='')
