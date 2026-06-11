@@ -322,7 +322,7 @@ def main(cfg: DictConfig):
             load_from_cache_file=True,
         )
         # Filter out sequences that are too long
-        proc_dataset = proc_dataset.filter(lambda x: x["seq_lengths"] <= cfg.max_prompt_length)
+        # proc_dataset = proc_dataset.filter(lambda x: x["seq_lengths"] <= cfg.max_prompt_length)
         log_color(tokenizer.decode(proc_dataset[0]['input_ids']), title="Example Input")
         seq_length_stats = proc_dataset.to_pandas()["seq_lengths"].describe()
         log_color(str(seq_length_stats.round(2)), title="Sequence Lengths")
